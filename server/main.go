@@ -3,11 +3,21 @@ package main
 import (
 	"log"
 	"net/http"
+	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
-	err := http.ListenAndServe(":3333", nil)
+	db, err := sql.Open("sqlite3", "database.db")
 	if err != nil {
-		log.Fatalln("error listening on port 3333")
+		log.Fatalln(err)
+	}
+	err = http.ListenAndServe(":3333", nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = db.Close()
+	if err != nil {
+		log.Fatalln(err)
 	}
 }
