@@ -1,7 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"log"
+	"net/http"
+)
 
 func main() {
-	fmt.Println("Hello world!")
+	err := http.ListenAndServe(":3333", nil)
+	if err != nil {
+		log.Fatalln("error listening on port 3333")
+	}
 }
