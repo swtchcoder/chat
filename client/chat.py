@@ -71,9 +71,9 @@ def main():
     print(f"\033[0;38;2;255;0;0;49mCréer un compte (2){Colors.RESET}")
     action = input("").strip()
     if action == "1":
-        URL = "https://chat.switchcodeur.com/register"
-    elif action == "2":
         URL = "https://chat.switchcodeur.com/login"
+    elif action == "2":
+        URL = "https://chat.switchcodeur.com/register"
     else:
         main()
         time.spleep(1)
