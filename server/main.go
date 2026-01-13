@@ -26,6 +26,7 @@ var insertUserStatement *sql.Stmt
 var getPasswordStatement *sql.Stmt
 var updateKeyStatement *sql.Stmt
 var getUserStatement *sql.Stmt
+var consumeKeyStatement *sql.Stmt
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -91,6 +92,14 @@ SELECT id, username FROM users WHERE key = ?
 		log.Fatalln("db.Prepare() error:", err)
 	}
 	defer getUserStatement.Close()
+
+	consumeKeyStatement, err = db.Prepare(`
+UPDATE users SET key = NULL WHERE username = ?
+	`)
+	if err != nil {
+		log.Fatalln("db.Prepare() error:", err)
+	}
+	defer updateKeyStatement.Close()
 
 	conns = make(map[int]*websocket.Conn)
 
@@ -206,9 +215,13 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	_, err = updateKeyStatement.Exec(username, "")
+	if conns[id] != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	_, err = consumeKeyStatement.Exec(username)
 	if err != nil {
-		log.Println("updateKeyStatement.Exec() error:", err)
+		log.Println("consumeKeyStatement.Exec() error:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 	conn, err = upgrader.Upgrade(w, r, nil)
